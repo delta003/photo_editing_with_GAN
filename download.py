@@ -104,7 +104,7 @@ def download_celeb_a(dirpath):
 
 def _list_categories(tag):
   url = 'http://lsun.cs.princeton.edu/htbin/list.cgi?tag=' + tag
-  f = urllib.request.urlopen(url)
+  f = request.urlopen(url)
   return json.loads(f.read())
 
 def _download_lsun(out_dir, category, set_name, tag):

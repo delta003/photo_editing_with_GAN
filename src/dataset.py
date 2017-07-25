@@ -91,3 +91,13 @@ class FacesData(DataSet):
         j = round((h - crop_h) / 2)
         i = round((w - crop_w) / 2)
         return x[j:j + crop_h, i:i + crop_w]
+
+
+class CelebAData(DataSet):
+    def __init__(self, img_size, crop_size = 64):
+        # TODO
+        pass
+
+    def next_batch_real(self, batch_size):
+        # TODO
+        pass
