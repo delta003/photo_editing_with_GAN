@@ -95,25 +95,23 @@ class FacesData(DataSet):
         return x[j:j + crop_h, i:i + crop_w]
 
 
-
 class CelebAData(DataSet):
     def __init__(self, img_size, input_height = 108, input_width = 108):
-        # TODO
-        # self.attributes = []
-        self.img_attributes = {}
-        self.input_height = input_height #108
-        self.input_width = input_width #108
-        self.img_size = img_size #64
+        self.attributes = []
+        self.img_attributes = []
+        self.input_height = input_height  # 108
+        self.input_width = input_width  # 108
+        self.img_size = img_size  # 64
         self.channels = 3
         self.idx = 0
         data = glob(os.path.join("./data", "celebA", '*.jpg'))
         files = [get_image(file,
-                      input_height=self.input_height,
-                      input_width=self.input_width,
-                      resize_height=self.output_height,
-                      resize_width=self.output_width,
-                      crop=self.crop,
-                      grayscale=self.grayscale) for file in data]
+                           input_height=self.input_height,
+                           input_width=self.input_width,
+                           resize_height=self.img_size,
+                           resize_width=self.img_size,
+                           crop=True,
+                           grayscale=False) for file in data]
         self.images = np.array(files).astype(np.float32)
 
     def load_attributes(self):
@@ -123,13 +121,12 @@ class CelebAData(DataSet):
             self.attributes = f.readline().split()
             for _ in range(0, n):
                 parts = f.readline().split()
-                name = parts[0]
                 attrs = [int(x) for x in parts[1:]]
-                self.img_attributes[name] = attrs
+                self.img_attributes.append(attrs)
 
     def next_batch_real(self, batch_size):
-        ret = self.images[self.idx * batch_size : (self.idx + 1) * batch_size]
-        if (self.idx == len(self.images) // batch_size - 1):
+        ret = self.images[self.idx * batch_size: (self.idx + 1) * batch_size]
+        if self.idx == len(self.images) // batch_size - 1:
             self.idx = 0
         return ret
 
