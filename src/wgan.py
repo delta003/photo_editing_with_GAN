@@ -250,7 +250,8 @@ class WGAN:
         # TODO
         z_batch = np.random.rand(batch_size, self.z_size)
         f_image = self.session.run(self.fake_image, feed_dict={self.z : z_batch})
-        from scipy import misc
-        misc.pilutil.imshow(f_image[0])
+        import matplotlib.pyplot as plt
+        plt.imshow(np.array(f_image[0]).astype(np.float32))
+        plt.show()
         print('Image generated.')
         pass
