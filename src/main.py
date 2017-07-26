@@ -22,8 +22,8 @@ steps = args.steps
 img_size = 64
 channels = 3
 
-generator = FCGenerator(img_size=img_size, channels=channels)
-critic = FCCritic(img_size=img_size, channels=channels)
+generator = DCGANGenerator(img_size=img_size, channels=channels)
+critic = DCGANCritic(img_size=img_size, channels=channels)
 
 sess = tf.Session()
 

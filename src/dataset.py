@@ -104,11 +104,14 @@ class CelebAData(DataSet):
         self.img_size = img_size  # 64
         self.channels = 3
         self.idx = 0
+        self.dataset_size = dataset_size
         print('Loading images data...')
-        data = glob(os.path.join("data", "celebA", '*.jpg'))
+        self.data = glob(os.path.join("data", "celebA", '*.jpg'))
         # Limit dataset size
         if dataset_size > 0:
-            data = data[:dataset_size]
+            self.data = self.data[:dataset_size]
+        else:
+            self.dataset_size = len(self.data)
         print('Loading images data completed.')
         print('Resizing images...')
         files = [get_image(file,
@@ -136,9 +139,15 @@ class CelebAData(DataSet):
     def next_batch_real(self, batch_size):
         ret = []
         for _ in range(0, batch_size):
-            ret.append(self.images[self.idx])
+            ret.append(get_image(self.data[self.idx],
+                                 input_height = self.input_height,
+                                 input_width = self.input_width,
+                                 resize_height = self.img_size,
+                                 resize_width = self.img_size,
+                                 crop = True,
+                                 grayscale = False))
             self.idx += 1
-            if self.idx == self.n:
+            if self.idx == self.dataset_size:
                 self.idx = 0
         return ret
 
