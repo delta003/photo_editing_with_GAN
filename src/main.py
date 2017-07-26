@@ -11,6 +11,7 @@ import tensorflow as tf
 parser = argparse.ArgumentParser(description='Arguments.')
 parser.add_argument('--batch_size', type=int, default=64)
 parser.add_argument('--steps', type=int, default=101)
+parser.add_argument('--dataset_size', type=int, default=-1)
 parser.add_argument('--load', type=bool, default=False)
 parser.add_argument('--generate', type=bool, default=False)
 
@@ -44,7 +45,7 @@ if args.load:
     if not loaded:
         sys.exit(0)
 else:
-    dataset = CelebAData(img_size = img_size)
+    dataset = CelebAData(img_size = img_size, dataset_size = args.dataset_size)
     wgan.train(dataset=dataset, batch_size=batch_size, steps=steps)
 
 if args.generate:

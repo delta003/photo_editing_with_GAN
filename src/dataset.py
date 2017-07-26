@@ -96,7 +96,7 @@ class FacesData(DataSet):
 
 
 class CelebAData(DataSet):
-    def __init__(self, img_size, input_height = 108, input_width = 108):
+    def __init__(self, img_size, dataset_size, input_height = 108, input_width = 108):
         self.attributes = []
         self.img_attributes = []
         self.input_height = input_height  # 108
@@ -104,10 +104,11 @@ class CelebAData(DataSet):
         self.img_size = img_size  # 64
         self.channels = 3
         self.idx = 0
-        self.n = 10000
         print('Loading images data...')
         data = glob(os.path.join("data", "celebA", '*.jpg'))
-        data = data[:self.n]
+        # Limit dataset size
+        if dataset_size > 0:
+            data = data[:dataset_size]
         print('Loading images data completed.')
         print('Resizing images...')
         files = [get_image(file,
