@@ -100,6 +100,5 @@ class ConvCritic:
             image = tf.reshape(image, [-1, 4 * 4 * 1024])
             image = tf.layers.dense(image, 1)
 
-            print(image.shape)
             assert image.shape[1] == 1
             return image
