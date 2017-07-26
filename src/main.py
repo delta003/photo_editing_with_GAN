@@ -2,9 +2,13 @@ from dataset import *
 from wgan import *
 from generators import *
 from critics import *
+from utils_celeb import *
+from PIL import Image
+import numpy as np
 
-dataset = FacesData(img_size=32)
+#dataset = FacesData(img_size=32)
 # dataset = MNISTData()
+dataset = CelebAData(64)
 
 generator = FCGenerator(img_size=dataset.img_size,
                         channels=dataset.channels)
