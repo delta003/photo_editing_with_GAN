@@ -245,8 +245,12 @@ class WGAN:
             print("Failed to find a checkpoint")
             return False, 0
 
-    def generate(self):
+    def generate(self, batch_size):
         print('Generating image...')
         # TODO
+        z_batch = np.random.rand(batch_size, self.z_size)
+        f_image = self.session.run(self.fake_image, feed_dict={self.z : z_batch})
+        from scipy import misc
+        misc.pilutil.imshow(f_image[0])
         print('Image generated.')
         pass
