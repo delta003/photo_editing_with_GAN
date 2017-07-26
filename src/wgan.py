@@ -188,7 +188,7 @@ class WGAN:
         if step < 25:
             n_critic = 100
         else:
-            n_critic = 5
+            n_critic = 10
 
         # Train Critic
         for _ in range(n_critic):
