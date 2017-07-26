@@ -3,6 +3,8 @@ import tensorflow as tf
 import numpy as np
 import os
 from utils import Timer
+from utils_vis import visualize_grid
+import matplotlib.pyplot as plt
 
 
 class WGAN:
@@ -245,13 +247,12 @@ class WGAN:
             print("Failed to find a checkpoint")
             return False, 0
 
-    def generate(self, batch_size):
+    def generate(self, batch_size = 10):
         print('Generating image...')
-        # TODO
         z_batch = np.random.rand(batch_size, self.z_size)
-        f_image = self.session.run(self.fake_image, feed_dict={self.z : z_batch})
-        import matplotlib.pyplot as plt
-        plt.imshow(np.array(f_image[0]).astype(np.float32))
+        f_image = self.session.run(self.fake_image, feed_dict={self.z: z_batch})
+        plt.imshow(visualize_grid(np.array(f_image).astype(np.float32)))
+        plt.axis("off")
         plt.show()
         print('Image generated.')
         pass

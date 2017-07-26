@@ -48,5 +48,5 @@ else:
     wgan.train(dataset=dataset, batch_size=batch_size, steps=steps)
 
 if args.generate:
-    wgan.generate(batch_size=batch_size)
+    wgan.generate()
 
