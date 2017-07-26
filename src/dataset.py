@@ -144,3 +144,51 @@ class CelebAData(DataSet):
                 self.idx = 0
         return ret
 
+class ConditionalCelebAData(DataSet):
+    def __init__(self, img_size, dataset_size, input_height = 108, input_width = 108):
+        self.attributes = []
+        self.img_attributes = []
+        self.input_height = input_height  # 108
+        self.input_width = input_width  # 108
+        self.img_size = img_size  # 64
+        self.channels = 3
+        self.idx = 0
+        self.dataset_size = dataset_size
+        print('Loading images data...')
+        self.data = glob(os.path.join("data", "celebA", '*.jpg'))
+        # Limit dataset size
+        if dataset_size > 0:
+            self.data = self.data[:dataset_size]
+        else:
+            self.dataset_size = len(self.data)
+        print('Loading images data completed.')
+        # print('Resizing images...')
+        # print('Resizing images completed.')
+        # self.images = np.array(files).astype(np.float32)
+
+    def load_attributes(self):
+        print('Loading attributes...')
+        list_attr_file = 'list_attr_celeba.txt'
+        with open(list_attr_file) as f:
+            n = int(f.readline())
+            self.attributes = f.readline().split()
+            for _ in range(0, n):
+                parts = f.readline().split()
+                attrs = [int(x) for x in parts[1:]]
+                self.img_attributes.append(attrs)
+        print('Loading attributes completed.')
+
+    def next_batch_real(self, batch_size):
+        ret = []
+        for _ in range(0, batch_size):
+            ret.append(get_image(self.data[self.idx],
+                                 input_height = self.input_height,
+                                 input_width = self.input_width,
+                                 resize_height = self.img_size,
+                                 resize_width = self.img_size,
+                                 crop = True,
+                                 grayscale = False))
+            self.idx += 1
+            if self.idx == self.dataset_size:
+                self.idx = 0
+        return ret

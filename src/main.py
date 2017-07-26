@@ -13,6 +13,7 @@ parser.add_argument('--batch_size', type=int, default=64)
 parser.add_argument('--steps', type=int, default=101)
 parser.add_argument('--dataset_size', type=int, default=-1)
 parser.add_argument('--load', type=bool, default=False)
+parser.add_argument('--train', type=bool, default=False)
 parser.add_argument('--generate', type=bool, default=False)
 
 args = parser.parse_args()
@@ -27,24 +28,20 @@ critic = DCGANCritic(img_size=img_size, channels=channels)
 
 sess = tf.Session()
 
-if args.load:
-    model_path = 'log'
-else:
-    model_path = project_path.model_path
-
 wgan = WGAN(generator=generator,
             critic=critic,
             z_size=100,
             session=sess,
-            model_path=model_path,
+            model_path=project_path.model_path,
             img_size = 64,
             channels = 3)
 
 if args.load:
-    loaded = wgan.load()
+    loaded = wgan.load('log')
     if not loaded:
         sys.exit(0)
-else:
+
+if args.train:
     dataset = CelebAData(img_size = img_size, dataset_size = args.dataset_size)
     wgan.train(dataset=dataset, batch_size=batch_size, steps=steps)
 

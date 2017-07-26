@@ -232,14 +232,14 @@ class WGAN:
         writer.add_summary(summary, step)
         print("\rSummary generated. Step", step, " Time == %.2fs" % timer.time())
 
-    def load(self):
+    def load(self, checkpoint_path):
         import re
         print("Reading checkpoints...")
-        ckpt = tf.train.get_checkpoint_state(self.model_path)
+        ckpt = tf.train.get_checkpoint_state(checkpoint_path)
         if ckpt and ckpt.model_checkpoint_path:
             ckpt_name = os.path.basename(ckpt.model_checkpoint_path)
             saver = tf.train.Saver()
-            saver.restore(self.session, os.path.join(self.model_path, ckpt_name))
+            saver.restore(self.session, os.path.join(checkpoint_path, ckpt_name))
             counter = int(next(re.finditer("(\d+)(?!.*\d)", ckpt_name)).group(0))
             print("Success to read {}".format(ckpt_name))
             return True, counter
