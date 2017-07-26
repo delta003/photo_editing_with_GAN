@@ -207,6 +207,8 @@ class WGAN:
             self.z: z_batch
         })
 
+        self.generate()
+
         """
         ##################################################################
         YOUR CODE END. 
