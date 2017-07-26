@@ -19,9 +19,9 @@ steps = args.steps
 
 dataset = CelebAData(img_size = 64)
 
-generator = DCGANGenerator(img_size=dataset.img_size,
+generator = FCGenerator(img_size=dataset.img_size,
                            channels=dataset.channels)
-critic = DCGANCritic(img_size=dataset.img_size,
+critic = FCCritic(img_size=dataset.img_size,
                      channels=dataset.channels)
 
 sess = tf.Session()

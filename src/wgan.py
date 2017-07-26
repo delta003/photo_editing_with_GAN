@@ -141,7 +141,7 @@ class WGAN:
         :param model_path: location of the model on the filesystem
         """
         writer = tf.summary.FileWriter(self.model_path, self.session.graph)
-        tf.global_variables_initializer().run()
+        tf.global_variables_initializer().run(session = self.session)
         saver = tf.train.Saver()
 
         timer = Timer()
