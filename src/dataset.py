@@ -99,6 +99,8 @@ class FacesData(DataSet):
 class CelebAData(DataSet):
     def __init__(self, img_size, input_height = 108, input_width = 108):
         # TODO
+        # self.attributes = []
+        self.img_attributes = {}
         self.input_height = input_height #108
         self.input_width = input_width #108
         self.img_size = img_size #64
@@ -113,7 +115,17 @@ class CelebAData(DataSet):
                       crop=self.crop,
                       grayscale=self.grayscale) for file in data]
         self.images = np.array(files).astype(np.float32)
-        pass
+
+    def load_attributes(self):
+        list_attr_file = 'list_attr_celeba.txt'
+        with open(list_attr_file) as f:
+            n = int(f.readline())
+            self.attributes = f.readline().split()
+            for _ in range(0, n):
+                parts = f.readline().split()
+                name = parts[0]
+                attrs = [int(x) for x in parts[1:]]
+                self.img_attributes[name] = attrs
 
     def next_batch_real(self, batch_size):
         ret = self.images[self.idx * batch_size : (self.idx + 1) * batch_size]
