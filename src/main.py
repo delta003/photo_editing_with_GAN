@@ -10,19 +10,19 @@ import tensorflow as tf
 
 parser = argparse.ArgumentParser(description='Arguments.')
 parser.add_argument('--batch_size', type=int, default=64)
-parser.add_argument('--steps', type=int, default=100)
+parser.add_argument('--steps', type=int, default=101)
 parser.add_argument('--load', type=bool, default=False)
+parser.add_argument('--generate', type=bool, default=False)
 
 args = parser.parse_args()
 batch_size = args.batch_size
 steps = args.steps
 
-dataset = CelebAData(img_size = 64)
+img_size = 64
+channels = 3
 
-generator = FCGenerator(img_size=dataset.img_size,
-                           channels=dataset.channels)
-critic = FCCritic(img_size=dataset.img_size,
-                     channels=dataset.channels)
+generator = FCGenerator(img_size=img_size, channels=channels)
+critic = FCCritic(img_size=img_size, channels=channels)
 
 sess = tf.Session()
 
@@ -33,13 +33,20 @@ else:
 
 wgan = WGAN(generator=generator,
             critic=critic,
-            dataset=dataset,
             z_size=100,
             session=sess,
-            model_path=model_path)
+            model_path=model_path,
+            img_size = 64,
+            channels = 3)
 
 if args.load:
-    wgan.load()
+    loaded = wgan.load()
+    if not loaded:
+        sys.exit(0)
 else:
-    wgan.train(batch_size=batch_size, steps=steps)
+    dataset = CelebAData(img_size = img_size)
+    wgan.train(dataset=dataset, batch_size=batch_size, steps=steps)
+
+if args.generate:
+    wgan.generate()
 

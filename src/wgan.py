@@ -11,17 +11,17 @@ class WGAN:
     def __init__(self,
                  generator,
                  critic,
-                 dataset,
                  z_size,
                  session,
                  model_path,
+                 img_size,
+                 channels,
                  optimizer=tf.train.AdamOptimizer(learning_rate=0.0001, beta1=0.5, beta2=0.9)):
         """
         Definition of the Wasserstein GAN with Gradient Penalty (WGAN-GP)
 
         :param generator: neural network which takes a batch of random vectors and creates a batch of images
         :param critic: neural network which takes a batch of images and outputs a "realness" score for each of them
-        :param dataset: dataset which will be reconstructed
         :param z_size: size of the random vector used for generation
         :param session: Tensorflow session to use
         :param model_path: model path for saving/loading checkpoints
@@ -30,19 +30,21 @@ class WGAN:
 
         self.session = session
         self.model_path = model_path
+        self.dataset = None
+        self.img_size = img_size
+        self.channels = channels
 
         self.generator = generator
         self.critic = critic
 
         self.optimizer = optimizer
         self.z_size = z_size
-        self.dataset = dataset
 
         # z shape is [batch_size, z_size]
         self.z = tf.placeholder(tf.float32, [None, self.z_size], name="Z")
         # image shape is [batch_size, height, width, channels]
         self.real_image = tf.placeholder(tf.float32,
-                                         [None, self.dataset.img_size, self.dataset.img_size, self.dataset.channels],
+                                         [None, self.img_size, self.img_size, self.channels],
                                          name="Real_image")
         """
         ##################################################################
@@ -131,15 +133,18 @@ class WGAN:
 
         self.merged = tf.summary.merge_all()
 
-    def train(self, batch_size, steps):
+    def train(self, dataset, batch_size, steps):
         """
         Trains the neural network by calling the .one_step() method "steps" number of times.
         Adds a Tensorboard summary every 100 steps
 
+        :param dataset: set for training
         :param batch_size:
         :param steps:
         :param model_path: location of the model on the filesystem
         """
+        self.dataset = dataset
+
         writer = tf.summary.FileWriter(self.model_path, self.session.graph)
         tf.global_variables_initializer().run(session = self.session)
         saver = tf.train.Saver()
@@ -155,6 +160,7 @@ class WGAN:
                 self.add_summary(self.session, step, writer, timer)
                 saver.save(self.session, self.model_path)
 
+        self.add_summary(self.session, steps, writer, timer)
         saver.save(self.session, self.model_path)
 
     def one_step(self, sess, batch_size, step):
@@ -235,6 +241,12 @@ class WGAN:
             counter = int(next(re.finditer("(\d+)(?!.*\d)", ckpt_name)).group(0))
             print("Success to read {}".format(ckpt_name))
             return True, counter
-        else :
+        else:
             print("Failed to find a checkpoint")
             return False, 0
+
+    def generate(self):
+        print('Generating image...')
+        # TODO
+        print('Image generated.')
+        pass
