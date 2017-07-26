@@ -113,16 +113,9 @@ class CelebAData(DataSet):
         else:
             self.dataset_size = len(self.data)
         print('Loading images data completed.')
-        print('Resizing images...')
-        files = [get_image(file,
-                           input_height=self.input_height,
-                           input_width=self.input_width,
-                           resize_height=self.img_size,
-                           resize_width=self.img_size,
-                           crop=True,
-                           grayscale=False) for file in data]
-        print('Resizing images completed.')
-        self.images = np.array(files).astype(np.float32)
+        # print('Resizing images...')
+        # print('Resizing images completed.')
+        # self.images = np.array(files).astype(np.float32)
 
     def load_attributes(self):
         print('Loading attributes...')
