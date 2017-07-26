@@ -104,7 +104,12 @@ class CelebAData(DataSet):
         self.img_size = img_size  # 64
         self.channels = 3
         self.idx = 0
-        data = glob(os.path.join("./data", "celebA", '*.jpg'))
+        self.n = 10000
+        print('Loading images data...')
+        data = glob(os.path.join("data", "celebA", '*.jpg'))
+        data = data[:self.n]
+        print('Loading images data completed.')
+        print('Resizing images...')
         files = [get_image(file,
                            input_height=self.input_height,
                            input_width=self.input_width,
@@ -112,9 +117,11 @@ class CelebAData(DataSet):
                            resize_width=self.img_size,
                            crop=True,
                            grayscale=False) for file in data]
+        print('Resizing images completed.')
         self.images = np.array(files).astype(np.float32)
 
     def load_attributes(self):
+        print('Loading attributes...')
         list_attr_file = 'list_attr_celeba.txt'
         with open(list_attr_file) as f:
             n = int(f.readline())
@@ -123,10 +130,14 @@ class CelebAData(DataSet):
                 parts = f.readline().split()
                 attrs = [int(x) for x in parts[1:]]
                 self.img_attributes.append(attrs)
+        print('Loading attributes completed.')
 
     def next_batch_real(self, batch_size):
-        ret = self.images[self.idx * batch_size: (self.idx + 1) * batch_size]
-        if self.idx == len(self.images) // batch_size - 1:
-            self.idx = 0
+        ret = []
+        for _ in range(0, batch_size):
+            ret.append(self.images[self.idx])
+            self.idx += 1
+            if self.idx == self.n:
+                self.idx = 0
         return ret
 

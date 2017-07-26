@@ -1,6 +1,7 @@
 import sys
 import tensorflow as tf
 import numpy as np
+import os
 from utils import Timer
 
 
@@ -12,6 +13,8 @@ class WGAN:
                  critic,
                  dataset,
                  z_size,
+                 session,
+                 model_path,
                  optimizer=tf.train.AdamOptimizer(learning_rate=0.0001, beta1=0.5, beta2=0.9)):
         """
         Definition of the Wasserstein GAN with Gradient Penalty (WGAN-GP)
@@ -20,8 +23,13 @@ class WGAN:
         :param critic: neural network which takes a batch of images and outputs a "realness" score for each of them
         :param dataset: dataset which will be reconstructed
         :param z_size: size of the random vector used for generation
-        :param optimizer: Default Adam with hyperparameters as recommended in the WGAN-GP paper
+        :param session: Tensorflow session to use
+        :param model_path: model path for saving/loading checkpoints
+        :param optimizer: default Adam with hyperparameters as recommended in the WGAN-GP paper
         """
+
+        self.session = session
+        self.model_path = model_path
 
         self.generator = generator
         self.critic = critic
@@ -123,7 +131,7 @@ class WGAN:
 
         self.merged = tf.summary.merge_all()
 
-    def __call__(self, batch_size, steps, model_path):
+    def train(self, batch_size, steps):
         """
         Trains the neural network by calling the .one_step() method "steps" number of times.
         Adds a Tensorboard summary every 100 steps
@@ -132,21 +140,22 @@ class WGAN:
         :param steps:
         :param model_path: location of the model on the filesystem
         """
-        with tf.Session() as sess:
-            writer = tf.summary.FileWriter(model_path, sess.graph)
-            tf.global_variables_initializer().run()
-            saver = tf.train.Saver()
+        writer = tf.summary.FileWriter(self.model_path, self.session.graph)
+        tf.global_variables_initializer().run()
+        saver = tf.train.Saver()
 
-            timer = Timer()
-            for step in range(steps):
-                print(step, end=" ")
-                sys.stdout.flush()
+        timer = Timer()
+        for step in range(steps):
+            print(step, end=" ")
+            sys.stdout.flush()
 
-                self.one_step(sess, batch_size, step)
+            self.one_step(self.session, batch_size, step)
 
-                if step % 100 == 0:
-                    self.add_summary(sess, step, writer, timer)
-                    saver.save(sess, model_path)
+            if step % 100 == 0:
+                self.add_summary(self.session, step, writer, timer)
+                saver.save(self.session, self.model_path)
+
+        saver.save(self.session, self.model_path)
 
     def one_step(self, sess, batch_size, step):
         """
@@ -214,3 +223,18 @@ class WGAN:
         summary = sess.run(self.merged, feed_dict={self.real_image: data_batch, self.z: z, self.eta: eta})
         writer.add_summary(summary, step)
         print("\rSummary generated. Step", step, " Time == %.2fs" % timer.time())
+
+    def load(self):
+        import re
+        print("Reading checkpoints...")
+        ckpt = tf.train.get_checkpoint_state(self.model_path)
+        if ckpt and ckpt.model_checkpoint_path:
+            ckpt_name = os.path.basename(ckpt.model_checkpoint_path)
+            saver = tf.train.Saver()
+            saver.restore(self.session, os.path.join(self.model_path, ckpt_name))
+            counter = int(next(re.finditer("(\d+)(?!.*\d)", ckpt_name)).group(0))
+            print("Success to read {}".format(ckpt_name))
+            return True, counter
+        else :
+            print("Failed to find a checkpoint")
+            return False, 0
