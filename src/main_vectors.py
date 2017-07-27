@@ -1,3 +1,6 @@
+"""
+    Calculates attributes' characteristic vectors.
+"""
 from autoencoder import AutoEncoder
 from dataset import *
 from encoders import DCGANAutoEncoder
@@ -9,17 +12,13 @@ import tensorflow as tf
 from loaders import load_session
 
 parser = argparse.ArgumentParser(description='Arguments.')
-parser.add_argument('--batch_size', type=int, default=64)
-parser.add_argument('--steps', type=int, default=101)
 parser.add_argument('--dataset_size', type=int, default=-1)
-parser.add_argument('--load', type=bool, default=False)
-parser.add_argument('--train', type=bool, default=False)
-parser.add_argument('--train_encoder', type=bool, default=False)
-parser.add_argument('--generate_random', type=bool, default=False)
 
 args = parser.parse_args()
-batch_size = args.batch_size
-steps = args.steps
+dataset_size = args.dataset_size
+
+print('Calculating vectors... {}')
+print('Configuration: dataset_size = {}'.format(dataset_size))
 
 img_size = 64
 channels = 3
@@ -38,9 +37,8 @@ wgan = WGAN(generator=generator,
             z_size=z_size,
             session=sess,
             model_path=project_path.model_path,
-            img_size=64,
-            channels=3,
-            optimizer=optimizer)
+            img_size=img_size,
+            channels=channels)
 
 encoder = DCGANAutoEncoder(img_size=img_size, channels=channels)
 ae = AutoEncoder(encoder=encoder,
@@ -56,19 +54,11 @@ ae = AutoEncoder(encoder=encoder,
 tf.global_variables_initializer().run(session = sess)
 
 # Do NOT restore Encoder namespace variables
-variables = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope = "Critic") \
-            + tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope = "Generator")
+variables = tf.get_collection(tf.GraphKeys.VARIABLES)
 loaded = load_session(wgan.session, 'log_transfer', variables)
 if not loaded:
     sys.exit(0)
 
 dataset = CelebAData(img_size = img_size, dataset_size = args.dataset_size)
 
-image = dataset.next_batch_real(10)
-# show_image(image[3])
-z = ae.extract_z(image)
-fake_image = wgan.generate(z)
-# show_image(fake_image[3])
-print(wgan.estimate(image))
-print(wgan.estimate(fake_image))
-
+# TODO: compute vectors and save to file

@@ -6,7 +6,7 @@ from generators import *
 from critics import *
 import argparse
 import tensorflow as tf
-from loader import load_session
+from loaders import load_session
 
 parser = argparse.ArgumentParser(description='Arguments.')
 parser.add_argument('--batch_size', type=int, default=64)

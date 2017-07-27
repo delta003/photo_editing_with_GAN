@@ -25,3 +25,8 @@ def load_session(sess, checkpoint_path, variables):
     else :
         print("Failed to find a checkpoint")
         return False, 0
+
+
+def load_attributes_vectors(path_to_file):
+    # TODO
+    pass
