@@ -75,7 +75,7 @@ z_characteristic_positive_count = np.zeros(attr_count)
 z_characteristic_negative = np.zeros((attr_count, z_size))
 z_characteristic_negative_count = np.zeros(attr_count)
 
-batch_size = 200
+batch_size = 64
 idx = 0
 while idx < n:
     images = dataset.get_images_batch(idx, batch_size)
@@ -94,9 +94,13 @@ while idx < n:
     print('{} / {}'.format(idx, n))
 
 for i in range(attr_count):
+    if z_characteristic_positive_count[i] == 0:
+        z_characteristic_positive_count[i] = 1
+    if z_characteristic_negative_count[i] == 0:
+        z_characteristic_negative_count[i] = 1
     z_characteristic_positive[i] /= z_characteristic_positive_count[i]
     z_characteristic_negative[i] /= z_characteristic_negative_count[i]
-    z_characteristic[i] = z_characteristic_positive - z_characteristic_negative
+    z_characteristic[i] = z_characteristic_positive[i] - z_characteristic_negative[i]
 
 # Save to file
 timestamp = strftime("%B_%d__%H_%M", localtime())

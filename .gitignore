@@ -4,6 +4,7 @@ log/
 log_*/
 .idea/
 .vscode/
+vectors*
 
 # Created by .ignore support plugin (hsz.mobi)
 ### JetBrains template
