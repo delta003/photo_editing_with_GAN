@@ -1,7 +1,7 @@
 # Custom
 data/
 log/
-log_transfer/
+log_*/
 .idea/
 .vscode/
 

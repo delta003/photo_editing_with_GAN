@@ -33,6 +33,7 @@ print('Configuration: steps = {}, batch_size = {}, dataset_size = {}'.format(
 img_size = 64
 channels = 3
 z_size = 100
+log_dir = 'log_transfer_27_21_24'
 
 generator = DCGANGenerator(img_size=img_size, channels=channels)
 critic = DCGANCritic(img_size=img_size, channels=channels)
@@ -71,7 +72,7 @@ variables = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope = "Critic") \
 if args.load:
     variables += tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope = "Encoder")
 
-loaded = load_session(sess, 'log_transfer', variables)
+loaded = load_session(sess, log_dir, variables)
 if not loaded:
     sys.exit(0)
 
