@@ -65,11 +65,11 @@ ae = AutoEncoder(encoder=encoder,
 tf.global_variables_initializer().run(session = sess)
 
 # Do NOT restore Encoder namespace variables
-variables = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope = "Critic") \
-            + tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope = "Generator")
+variables = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope = "Critic") \
+            + tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope = "Generator")
 # If load, than restore Encoder too
 if args.load:
-    variables += tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope = "Encoder")
+    variables += tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope = "Encoder")
 
 loaded = load_session(sess, 'log_transfer', variables)
 if not loaded:
