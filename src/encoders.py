@@ -21,13 +21,13 @@ class DCGANAutoEncoder:
             kwargs = {"kernel_size": (5, 5), "strides": (2, 2), "padding": "same", "activation": tf.nn.relu}
 
             # Same names as DCGANCritic variables
-            image = tf.layers.conv2d(image, filters = 64, name = 'conv2d_64', **kwargs)
-            image = tf.layers.conv2d(image, filters = 128, name = 'conv2d_128', **kwargs)
-            image = tf.layers.conv2d(image, filters = 256, name = 'conv2d_256', **kwargs)
-            image = tf.layers.conv2d(image, filters = 1024, name = 'conv2d_1024', **kwargs)
+            image = tf.layers.conv2d(image, filters = 64, **kwargs)
+            image = tf.layers.conv2d(image, filters = 128, **kwargs)
+            image = tf.layers.conv2d(image, filters = 256, **kwargs)
+            image = tf.layers.conv2d(image, filters = 1024, **kwargs)
             image = tf.reshape(image, [-1, 4 * 4 * 1024])
 
         # Last layer isn't reused from critic, it's encoder specific
         with tf.variable_scope("Critic", reuse = None):
-            image = tf.layers.dense(image, output_size, name = 'dense_encoder')
+            image = tf.layers.dense(image, output_size, name = "dense_encoder")
             return image

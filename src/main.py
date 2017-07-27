@@ -41,18 +41,19 @@ wgan = WGAN(generator=generator,
             channels=3,
             optimizer=optimizer)
 
-encoder = DCGANAutoEncoder(img_size=img_size, channels=channels)
-ae = AutoEncoder(encoder=encoder,
-                 generator=generator,
-                 z_size=z_size,
-                 session=sess,
-                 model_path=project_path.model_path,
-                 img_size=64,
-                 channels=3,
-                 optimizer=optimizer)
+# TODO: Unable to load since it wasn't trained with encoder
+# encoder = DCGANAutoEncoder(img_size=img_size, channels=channels)
+# ae = AutoEncoder(encoder=encoder,
+#                  generator=generator,
+#                  z_size=z_size,
+#                  session=sess,
+#                  model_path=project_path.model_path,
+#                  img_size=64,
+#                  channels=3,
+#                  optimizer=optimizer)
 
 if args.load:
-    loaded = load_session(wgan.session, 'log')
+    loaded = load_session(wgan.session, 'log_transfer')
     if not loaded:
         sys.exit(0)
 
@@ -63,8 +64,8 @@ if args.train or args.train_encoder:
 if args.train:
     wgan.train(dataset=dataset, batch_size=batch_size, steps=steps)
 
-if args.train_encoder:
-    ae.train(dataset=dataset, batch_size=batch_size, steps=steps)
+# if args.train_encoder:
+#     ae.train(dataset=dataset, batch_size=batch_size, steps=steps)
 
 if args.generate_random:
     wgan.generate_random()
