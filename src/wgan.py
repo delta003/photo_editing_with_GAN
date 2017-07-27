@@ -232,13 +232,11 @@ class WGAN:
         print("\rSummary generated. Step", step, " Time == %.2fs" % timer.time())
 
     def estimate(self, image):
-        print('Estimating image with critic...')
         # TODO: This is NOT good
         estimation = self.session.run(self.c_real, feed_dict = {self.real_image: image})
         return estimation
 
     def generate(self, z):
-        print('Generating images with vector...')
         f_image = self.session.run(self.fake_image, feed_dict = {self.z: z})
         return f_image
 

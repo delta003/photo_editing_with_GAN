@@ -144,11 +144,25 @@ class CelebAData(DataSet):
                 self.idx = 0
         return ret
 
-    def get_img_by_idx(self, indx):
-           return   get_image(self.data[indx],
-                    input_height=self.input_height,
-                    input_width=self.input_width,
-                    resize_height=self.img_size,
-                    resize_width=self.img_size,
-                    crop=True,
-                    grayscale=False)
+    def get_img_by_idx(self, idx):
+        return get_image(self.data[idx],
+                         input_height=self.input_height,
+                         input_width=self.input_width,
+                         resize_height=self.img_size,
+                         resize_width=self.img_size,
+                         crop=True,
+                         grayscale=False)
+
+    def get_images_batch(self, st, batch_size):
+        ret = []
+        for i in range(st, st + batch_size):
+            if i >= self.dataset_size:
+                break
+            ret.append(get_image(self.data[i],
+                                 input_height = self.input_height,
+                                 input_width = self.input_width,
+                                 resize_height = self.img_size,
+                                 resize_width = self.img_size,
+                                 crop = True,
+                                 grayscale = False))
+        return ret

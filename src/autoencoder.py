@@ -91,6 +91,5 @@ class AutoEncoder:
               " Time == %.2fs" % timer.time())
 
     def extract_z(self, image):
-        print('Extracting z from image...')
         z = self.session.run(self.z, feed_dict = {self.real_image: image})
         return z
