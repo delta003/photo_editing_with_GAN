@@ -53,6 +53,8 @@ class AutoEncoder:
 
         # Defining summaries for tensorflow until the end of the method
         tf.summary.scalar("Encoder cost", self.e_cost)
+        tf.summary.image("Real image", self.real_image, max_outputs = AutoEncoder.max_summary_images)
+        tf.summary.image("Generated image", self.fake_image, max_outputs = AutoEncoder.max_summary_images)
         self.merged = tf.summary.merge_all()
 
     def train(self, dataset, batch_size, steps):

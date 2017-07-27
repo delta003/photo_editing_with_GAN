@@ -31,6 +31,7 @@ print('Configuration: steps = {}, batch_size = {}, dataset_size = {}'.format(
 img_size = 64
 channels = 3
 z_size = 100
+log_dir = 'log_transfer'  # Only needed when --load
 
 generator = DCGANGenerator(img_size=img_size, channels=channels)
 critic = DCGANCritic(img_size=img_size, channels=channels)
@@ -50,10 +51,8 @@ wgan = WGAN(generator=generator,
 tf.global_variables_initializer().run(session = sess)
 
 if args.load:
-    # Do NOT restore Encoder namespace variables
-    variables = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope = "Critic") \
-                + tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope = "Generator")
-    loaded = load_session(sess, 'log_transfer', variables)
+    variables = tf.global_variables()
+    loaded = load_session(sess, log_dir, variables)
     if not loaded:
         sys.exit(0)
 
