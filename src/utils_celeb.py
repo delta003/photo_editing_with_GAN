@@ -1,5 +1,6 @@
 import scipy.misc
 import numpy as np
+import matplotlib.pyplot as plt
 
 def get_image(image_path, input_height, input_width,
               resize_height=64, resize_width=64,
@@ -33,3 +34,8 @@ def transform(image, input_height, input_width,
   else:
     cropped_image = scipy.misc.imresize(image, [resize_height, resize_width])
   return np.array(cropped_image) / 256
+
+def show_image(image):
+    plt.imshow(image.astype(np.float32))
+    plt.axis("off")
+    plt.show()

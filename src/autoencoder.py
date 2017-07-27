@@ -44,7 +44,8 @@ class AutoEncoder:
 
         # IMPORTANT: This will mess up trained critic because of variables namespace,
         # but we don't need it after we're done training generator
-        e_var_list = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope = "Critic")
+        e_var_list = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope = "Critic") \
+                     + tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope = "Encoder")
         self.e_optimizer = self.optimizer.minimize(self.e_cost,
                                                    var_list = e_var_list,
                                                    name = "Encoder_optimizer")
@@ -58,7 +59,6 @@ class AutoEncoder:
         self.dataset = dataset
 
         writer = tf.summary.FileWriter(self.model_path, self.session.graph)
-        tf.global_variables_initializer().run(session = self.session)
         saver = tf.train.Saver()
 
         timer = Timer()
@@ -88,5 +88,5 @@ class AutoEncoder:
 
     def extract_z(self, image):
         print('Extracting z from image...')
-        z = self.session.run(self.encoder, feed_dict = {self.real_image: [image]})
+        z = self.session.run(self.z, feed_dict = {self.real_image: image})
         return z

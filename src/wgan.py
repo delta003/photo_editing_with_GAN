@@ -146,7 +146,6 @@ class WGAN:
         self.dataset = dataset
 
         writer = tf.summary.FileWriter(self.model_path, self.session.graph)
-        tf.global_variables_initializer().run(session = self.session)
         saver = tf.train.Saver()
 
         timer = Timer()
@@ -230,17 +229,21 @@ class WGAN:
         writer.add_summary(summary, step)
         print("\rSummary generated. Step", step, " Time == %.2fs" % timer.time())
 
+    def estimate(self, image):
+        print('Estimating image with critic...')
+        # TODO: This is NOT good
+        estimation = self.session.run(self.c_real, feed_dict = {self.real_image: image})
+        return estimation
+
+    def generate(self, z):
+        print('Generating images with vector...')
+        f_image = self.session.run(self.fake_image, feed_dict = {self.z: z})
+        return f_image
+
     def generate_random(self, batch_size = 16):
         print('Generating images...')
         z_batch = np.random.rand(batch_size, self.z_size)
         f_image = self.session.run(self.fake_image, feed_dict={self.z: z_batch})
         plt.imshow(visualize_grid(np.array(f_image).astype(np.float32)))
-        plt.axis("off")
-        plt.show()
-
-    def generate(self, z):
-        print('Generating images with vector...')
-        f_image = self.session.run(self.fake_image, feed_dict = {self.z: [z]})
-        plt.imshow(f_image.astype(np.float32))
         plt.axis("off")
         plt.show()

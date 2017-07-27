@@ -28,6 +28,7 @@ z_size = 100
 generator = DCGANGenerator(img_size=img_size, channels=channels)
 critic = DCGANCritic(img_size=img_size, channels=channels)
 
+# Create session
 sess = tf.Session()
 
 optimizer = tf.train.AdamOptimizer(learning_rate = 0.0001, beta1 = 0.5, beta2 = 0.9)
@@ -41,32 +42,33 @@ wgan = WGAN(generator=generator,
             channels=3,
             optimizer=optimizer)
 
-# TODO: Unable to load since it wasn't trained with encoder
-# encoder = DCGANAutoEncoder(img_size=img_size, channels=channels)
-# ae = AutoEncoder(encoder=encoder,
-#                  generator=generator,
-#                  z_size=z_size,
-#                  session=sess,
-#                  model_path=project_path.model_path,
-#                  img_size=64,
-#                  channels=3,
-#                  optimizer=optimizer)
+encoder = DCGANAutoEncoder(img_size=img_size, channels=channels)
+ae = AutoEncoder(encoder=encoder,
+                 generator=generator,
+                 z_size=z_size,
+                 session=sess,
+                 model_path=project_path.model_path,
+                 img_size=64,
+                 channels=3,
+                 optimizer=optimizer)
 
-if args.load:
-    loaded = load_session(wgan.session, 'log_transfer')
-    if not loaded:
-        sys.exit(0)
+# Initialize variables
+tf.global_variables_initializer().run(session = sess)
 
-dataset = None
-if args.train or args.train_encoder:
-    dataset = CelebAData(img_size = img_size, dataset_size = args.dataset_size)
+# Do NOT restore Encoder namespace variables
+variables = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope = "Critic") \
+            + tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope = "Generator")
+loaded = load_session(wgan.session, 'log_transfer', variables)
+if not loaded:
+    sys.exit(0)
 
-if args.train:
-    wgan.train(dataset=dataset, batch_size=batch_size, steps=steps)
+dataset = CelebAData(img_size = img_size, dataset_size = args.dataset_size)
 
-# if args.train_encoder:
-#     ae.train(dataset=dataset, batch_size=batch_size, steps=steps)
-
-if args.generate_random:
-    wgan.generate_random()
+image = dataset.next_batch_real(10)
+# show_image(image[3])
+z = ae.extract_z(image)
+fake_image = wgan.generate(z)
+# show_image(fake_image[3])
+print(wgan.estimate(image))
+print(wgan.estimate(fake_image))
 
