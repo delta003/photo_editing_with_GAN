@@ -53,7 +53,7 @@ if args.load:
     # Do NOT restore Encoder namespace variables
     variables = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope = "Critic") \
                 + tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope = "Generator")
-    loaded = load_session(wgan.session, 'log_transfer', variables)
+    loaded = load_session(sess, 'log_transfer', variables)
     if not loaded:
         sys.exit(0)
 

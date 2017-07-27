@@ -71,7 +71,7 @@ variables = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope = "Critic"
 if args.load:
     variables += tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope = "Encoder")
 
-loaded = load_session(wgan.session, 'log_transfer', variables)
+loaded = load_session(sess, 'log_transfer', variables)
 if not loaded:
     sys.exit(0)
 

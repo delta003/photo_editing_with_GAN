@@ -55,10 +55,12 @@ tf.global_variables_initializer().run(session = sess)
 
 # Do NOT restore Encoder namespace variables
 variables = tf.get_collection(tf.GraphKeys.VARIABLES)
-loaded = load_session(wgan.session, 'log_transfer', variables)
+loaded = load_session(sess, 'log_transfer', variables)
 if not loaded:
     sys.exit(0)
 
 dataset = CelebAData(img_size = img_size, dataset_size = args.dataset_size)
+dataset.load_attributes()
 
 # TODO: compute vectors and save to file
+# ae.extract_z()
