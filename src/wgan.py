@@ -117,10 +117,12 @@ class WGAN:
         """
 
         # Defining summaries for tensorflow until the end of the method
-        tf.summary.image("Generated image", self.fake_image, max_outputs=WGAN.max_summary_images)
-        tf.summary.image("Real image", self.real_image, max_outputs=WGAN.max_summary_images)
-        tf.summary.scalar("Critic cost", self.c_cost)
-        tf.summary.scalar("Generator cost", self.g_cost)
+        summaries = [
+            tf.summary.image("Generated image", self.fake_image, max_outputs = WGAN.max_summary_images),
+            tf.summary.image("Real image", self.real_image, max_outputs = WGAN.max_summary_images),
+            tf.summary.scalar("Critic cost", self.c_cost),
+            tf.summary.scalar("Generator cost", self.g_cost)
+        ]
 
         # Distributions of weights and their gradients
         from tensorflow.python.framework import ops
@@ -129,10 +131,10 @@ class WGAN:
                 grad_values = gradient.values
             else:
                 grad_values = gradient
-            tf.summary.histogram(variable.name, variable)
-            tf.summary.histogram(variable.name + "/gradients", grad_values)
+            summaries.append(tf.summary.histogram(variable.name, variable))
+            summaries.append(tf.summary.histogram(variable.name + "/gradients", grad_values))
 
-        self.merged = tf.summary.merge_all()
+        self.merged = tf.summary.merge(summaries)
 
     def train(self, dataset, batch_size, steps):
         """
