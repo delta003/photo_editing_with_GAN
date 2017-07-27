@@ -143,3 +143,12 @@ class CelebAData(DataSet):
             if self.idx == self.dataset_size:
                 self.idx = 0
         return ret
+
+    def get_img_by_idx(self, indx):
+           return   get_image(self.data[indx],
+                    input_height=self.input_height,
+                    input_width=self.input_width,
+                    resize_height=self.img_size,
+                    resize_width=self.img_size,
+                    crop=True,
+                    grayscale=False)

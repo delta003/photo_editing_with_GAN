@@ -55,12 +55,56 @@ tf.global_variables_initializer().run(session = sess)
 
 # Do NOT restore Encoder namespace variables
 variables = tf.get_collection(tf.GraphKeys.VARIABLES)
+
 loaded = load_session(sess, 'log_transfer', variables)
 if not loaded:
-    sys.exit(0)
+ sys.exit(0)
 
 dataset = CelebAData(img_size = img_size, dataset_size = args.dataset_size)
 dataset.load_attributes()
+#print(np.array(dataset.img_attributes, dtype=int).shape)
 
 # TODO: compute vectors and save to file
-# ae.extract_z()
+attributes = np.array(dataset.img_attributes, dtype=int)
+z_characteristic = np.zeros(attributes.shape[1], z_size)
+
+for attr_idx in range(attributes.shape[1]):
+    positive_attr_imgs = []
+    negative_attr_imgs = []
+    for idx in range(attributes.shape[0]):
+        if attributes[idx] > 0:
+            positive_attr_imgs.append(dataset.get_img_by_idx(idx))
+        else:
+            negative_attr_imgs.append(dataset.get_img_by_idx(idx))
+
+    #get z vectors for positive feature
+    positive_z = ae.extract_z(positive_attr_imgs)
+    avg_pos = sum(positive_z) / positive_z.shape[0]
+    #same for negative
+    negative_z = ae.extract_z(negative_attr_imgs)
+    avg_neg = sum(negative_z) / negative_z.shape[0]
+    z_characteristic[attr_idx] = avg_pos - avg_neg
+
+#save to file
+from time import localtime, strftime
+timestamp = strftime("%B_%d__%H_%M", localtime())
+np.save("vectors_" + timestamp, z_characteristic)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

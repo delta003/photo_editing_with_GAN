@@ -1,5 +1,6 @@
 import os
 import tensorflow as tf
+import numpy as np
 
 
 def load_session(sess, checkpoint_path, variables):
@@ -27,6 +28,7 @@ def load_session(sess, checkpoint_path, variables):
         return False, 0
 
 
-def load_attributes_vectors(path_to_file):
-    # TODO
-    pass
+def load_attributes_vectors(filename, dataset):
+    z_characteristic = np.load(filename)
+    attribute_num = len(dataset.attributes)
+    return {dataset.attributes[i] : z_characteristic[i] for i in range(attribute_num)}
