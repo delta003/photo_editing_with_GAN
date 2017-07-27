@@ -65,13 +65,13 @@ class DCGANGenerator:
     def __init__(self, img_size, channels):
         self.channels = channels
 
-    def __call__(self, z):
+    def __call__(self, z, reuse = None):
         """
 
         :param z:
         :return: returns tensor of shape [batch_size, 64, 64, channels]
         """
-        with tf.variable_scope("Generator"):
+        with tf.variable_scope("Generator", reuse = reuse):
             act = tf.nn.relu
 
             z = tf.layers.dense(z, 32768, activation=act)

@@ -32,36 +32,6 @@ class FCCritic:
             return image
 
 
-class DCGANCritic:
-    def __init__(self, img_size, channels):
-        """
-        DCGAN is only defined for 64x64 images, it takes the img_size and channels here only not to break the interface
-
-        :param img_size:
-        :param channels:
-        """
-        pass
-
-    def __call__(self, image, reuse=None):
-        """
-        Works only for 64x64
-
-        :param image:
-        :param reuse:
-        :return:
-        """
-        with tf.variable_scope("Critic", reuse=reuse):
-            kwargs = {"kernel_size": (5, 5), "strides": (2, 2), "padding": "same", "activation": tf.nn.relu}
-
-            image = tf.layers.conv2d(image, filters=64, **kwargs)
-            image = tf.layers.conv2d(image, filters=128, **kwargs)
-            image = tf.layers.conv2d(image, filters=256, **kwargs)
-            image = tf.layers.conv2d(image, filters=1024, **kwargs)
-            image = tf.reshape(image, [-1, 4 * 4 * 1024])
-            image = tf.layers.dense(image, 1)
-            return image
-
-
 class ConvCritic:
     def __init__(self, img_size, channels):
         """
@@ -102,3 +72,37 @@ class ConvCritic:
 
             assert image.shape[1] == 1
             return image
+
+
+class DCGANCritic:
+    def __init__(self, img_size, channels):
+        """
+        DCGAN is only defined for 64x64 images, it takes the img_size and channels here only not to break the interface
+
+        :param img_size:
+        :param channels:
+        """
+        pass
+
+    def __call__(self, image, reuse = None):
+        """
+        Works only for 64x64
+
+        :param image:
+        :param reuse:
+        :return:
+        """
+        with tf.variable_scope("Critic", reuse = reuse):
+            kwargs = {"kernel_size": (5, 5), "strides": (2, 2), "padding": "same", "activation": tf.nn.relu}
+
+            # Names needed for encoder, if changed make sure you make changes in encoders.py
+            image = tf.layers.conv2d(image, filters=64, name = 'conv2d_64', **kwargs)
+            image = tf.layers.conv2d(image, filters=128, name = 'conv2d_128', **kwargs)
+            image = tf.layers.conv2d(image, filters=256, name = 'conv2d_256', **kwargs)
+            image = tf.layers.conv2d(image, filters=1024, name = 'conv2d_1024', **kwargs)
+            image = tf.reshape(image, [-1, 4 * 4 * 1024])
+            image = tf.layers.dense(image, 1, name = 'dense_1')
+            return image
+
+
+

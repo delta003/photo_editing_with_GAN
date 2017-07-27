@@ -8,21 +8,26 @@ class DCGANAutoEncoder:
         """
         pass
 
-    def __call__(self, image, output_size, reuse=None):
+    def __call__(self, image, output_size):
         """
-        Works only for 64x64
+        This reuses critic variables in all except last layer.
 
         :param image:
-        :param reuse:
+        :param output_size:
         :return:
         """
-        with tf.variable_scope("Encoder", reuse=reuse):
+        # We must keep same scope name to reuse weights from critic
+        with tf.variable_scope("Critic", reuse = True):
             kwargs = {"kernel_size": (5, 5), "strides": (2, 2), "padding": "same", "activation": tf.nn.relu}
 
-            image = tf.layers.conv2d(image, filters=64, **kwargs)
-            image = tf.layers.conv2d(image, filters=128, **kwargs)
-            image = tf.layers.conv2d(image, filters=256, **kwargs)
-            image = tf.layers.conv2d(image, filters=1024, **kwargs)
+            # Same names as DCGANCritic variables
+            image = tf.layers.conv2d(image, filters = 64, name = 'conv2d_64', **kwargs)
+            image = tf.layers.conv2d(image, filters = 128, name = 'conv2d_128', **kwargs)
+            image = tf.layers.conv2d(image, filters = 256, name = 'conv2d_256', **kwargs)
+            image = tf.layers.conv2d(image, filters = 1024, name = 'conv2d_1024', **kwargs)
             image = tf.reshape(image, [-1, 4 * 4 * 1024])
-            image = tf.layers.dense(image, output_size)
+
+        # Last layer isn't reused from critic, it's encoder specific
+        with tf.variable_scope("Critic", reuse = None):
+            image = tf.layers.dense(image, output_size, name = 'dense_encoder')
             return image

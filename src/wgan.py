@@ -1,7 +1,6 @@
 import sys
 import tensorflow as tf
 import numpy as np
-import os
 from utils import Timer
 from utils_vis import visualize_grid
 import matplotlib.pyplot as plt
@@ -143,7 +142,6 @@ class WGAN:
         :param dataset: set for training
         :param batch_size:
         :param steps:
-        :param model_path: location of the model on the filesystem
         """
         self.dataset = dataset
 
@@ -232,27 +230,17 @@ class WGAN:
         writer.add_summary(summary, step)
         print("\rSummary generated. Step", step, " Time == %.2fs" % timer.time())
 
-    def load(self, checkpoint_path):
-        import re
-        print("Reading checkpoints...")
-        ckpt = tf.train.get_checkpoint_state(checkpoint_path)
-        if ckpt and ckpt.model_checkpoint_path:
-            ckpt_name = os.path.basename(ckpt.model_checkpoint_path)
-            saver = tf.train.Saver()
-            saver.restore(self.session, os.path.join(checkpoint_path, ckpt_name))
-            counter = int(next(re.finditer("(\d+)(?!.*\d)", ckpt_name)).group(0))
-            print("Success to read {}".format(ckpt_name))
-            return True, counter
-        else:
-            print("Failed to find a checkpoint")
-            return False, 0
-
-    def generate(self, batch_size = 10):
-        print('Generating image...')
+    def generate_random(self, batch_size = 16):
+        print('Generating images...')
         z_batch = np.random.rand(batch_size, self.z_size)
         f_image = self.session.run(self.fake_image, feed_dict={self.z: z_batch})
         plt.imshow(visualize_grid(np.array(f_image).astype(np.float32)))
         plt.axis("off")
         plt.show()
-        print('Image generated.')
-        pass
+
+    def generate(self, z):
+        print('Generating images with vector...')
+        f_image = self.session.run(self.fake_image, feed_dict = {self.z: [z]})
+        plt.imshow(f_image.astype(np.float32))
+        plt.axis("off")
+        plt.show()
