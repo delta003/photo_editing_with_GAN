@@ -39,3 +39,16 @@ def show_image(image):
     plt.imshow(image.astype(np.float32))
     plt.axis("off")
     plt.show()
+
+def pixel_distance(pixel1, pixel2):
+    ret = 0
+    for i in range(len(pixel1)):
+        ret += (pixel1[i] - pixel2[i]) ** 2
+    return ret
+
+def image_distance(img1, img2):
+    dist_square = 0
+    for i in range(img1.shape[0]):
+        for j in range(img1.shape[1]):
+            dist_square += pixel_distance(img1[i][j], img2[i][j])
+    return dist_square

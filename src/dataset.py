@@ -3,7 +3,7 @@ import numpy as np
 from tensorflow.examples.tutorials.mnist import input_data
 from utils import *
 from glob import glob
-from utils_celeb import *
+from utils_image import *
 
 project_path = ProjectPath("log")
 
@@ -166,3 +166,25 @@ class CelebAData(DataSet):
                                  crop = True,
                                  grayscale = False))
         return ret
+
+    def get_nearest_neighbor(self, images):
+        print('Searching for nearest neighbor...')
+        nearest = np.zeros(images.shape)
+        nearest_dist = np.zeros(images.shape[0])
+        nearest_dist.fill(-1)
+        for i in range(self.dataset_size):
+            sample = get_image(self.data[i],
+                               input_height = self.input_height,
+                               input_width = self.input_width,
+                               resize_height = self.img_size,
+                               resize_width = self.img_size,
+                               crop = True,
+                               grayscale = False)
+            for idx, img in enumerate(images):
+                d = image_distance(img, sample)
+                if nearest_dist[idx] < 0 or d < nearest_dist[idx]:
+                    nearest_dist[idx] = d
+                    nearest[idx] = sample
+            print('{} / {}'.format(i, self.dataset_size))
+        return np.array(nearest)
+

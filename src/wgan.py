@@ -2,7 +2,7 @@ import sys
 import tensorflow as tf
 import numpy as np
 from utils import Timer
-from utils_vis import visualize_grid
+from utils_vis import visualize_grid, visualize_grid_binary
 import matplotlib.pyplot as plt
 
 
@@ -241,9 +241,17 @@ class WGAN:
         return f_image
 
     def generate_random(self, batch_size = 16):
-        print('Generating images...')
         z_batch = np.random.rand(batch_size, self.z_size)
         f_image = self.session.run(self.fake_image, feed_dict={self.z: z_batch})
         plt.imshow(visualize_grid(np.array(f_image).astype(np.float32)))
+        plt.axis("off")
+        plt.show()
+
+    def generate_random_with_neighbor(self, dataset, batch_size = 8):
+        z_batch = np.random.rand(batch_size, self.z_size)
+        f_image = self.session.run(self.fake_image, feed_dict = {self.z : z_batch})
+        neighbor = dataset.get_nearest_neighbor(f_image)
+        images = np.concatenate((f_image, neighbor))
+        plt.imshow(visualize_grid_binary(np.array(images).astype(np.float32)))
         plt.axis("off")
         plt.show()

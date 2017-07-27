@@ -20,3 +20,22 @@ def visualize_grid(images, gap = 1):
     ming = G.min()
     G = (G - ming) / (maxg - ming)
     return G
+
+
+def visualize_grid_binary(images, gap = 1):
+    """ Visualize a grid of images """
+    (N, H, W, C) = images.shape
+    A = N // 2
+    G = np.ones((2 * (H + gap) - gap, A * (W + gap) - gap, C), images.dtype)
+    G *= np.min(images)
+    for n in range(N):
+        y = n // A
+        x = n % A
+        offset_h = y * (H + gap)
+        offset_w = x * (H + gap)
+        G[offset_h : offset_h + H, offset_w : offset_w + W, :] = images[n, :, :, :]
+    # Normalize to [0,1].
+    maxg = G.max()
+    ming = G.min()
+    G = (G - ming) / (maxg - ming)
+    return G

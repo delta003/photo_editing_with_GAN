@@ -65,4 +65,6 @@ if not loaded:
 
 dataset = CelebAData(img_size = img_size, dataset_size = args.dataset_size)
 
-wgan.generate_random(batch_size = 100)
+# wgan.generate_random(batch_size = 100)
+wgan.generate_random_with_neighbor(dataset)
+
