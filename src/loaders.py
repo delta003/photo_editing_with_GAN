@@ -31,4 +31,4 @@ def load_session(sess, checkpoint_path, variables):
 def load_attributes_vectors(filename, dataset):
     z_characteristic = np.load(filename)
     attribute_num = len(dataset.attributes)
-    return {dataset.attributes[i] : z_characteristic[i] for i in range(attribute_num)}
+    return {dataset.attributes[i]: z_characteristic[i] for i in range(attribute_num)}

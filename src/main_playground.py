@@ -24,6 +24,7 @@ steps = args.steps
 img_size = 64
 channels = 3
 z_size = 100
+log_dir = 'log_transfer_27_21_24'
 
 generator = DCGANGenerator(img_size=img_size, channels=channels)
 critic = DCGANCritic(img_size=img_size, channels=channels)
@@ -58,17 +59,10 @@ tf.global_variables_initializer().run(session = sess)
 # Do NOT restore Encoder namespace variables
 variables = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope = "Critic") \
             + tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope = "Generator")
-loaded = load_session(wgan.session, 'log_transfer', variables)
+loaded = load_session(wgan.session, log_dir, variables)
 if not loaded:
     sys.exit(0)
 
 dataset = CelebAData(img_size = img_size, dataset_size = args.dataset_size)
 
-image = dataset.next_batch_real(10)
-# show_image(image[3])
-z = ae.extract_z(image)
-fake_image = wgan.generate(z)
-# show_image(fake_image[3])
-print(wgan.estimate(image))
-print(wgan.estimate(fake_image))
-
+wgan.generate_random(batch_size = 100)
