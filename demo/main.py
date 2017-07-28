@@ -1,6 +1,8 @@
 """
     Demo app.
 """
+import json
+
 from flask import Flask, render_template, request, redirect, url_for, send_file
 from scipy.misc import imsave
 
@@ -50,10 +52,10 @@ ae = AutoEncoder(encoder=encoder,
 tf.global_variables_initializer().run(session = sess)
 
 # Do NOT restore Encoder namespace variables
-# variables = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES)
-# loaded = load_session(sess, log_dir, variables)
-# if not loaded:
-#     sys.exit(0)
+variables = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES)
+loaded = load_session(sess, log_dir, variables)
+if not loaded:
+    sys.exit(0)
 
 dataset = CelebAData(img_size = img_size, dataset_size = dataset_size)
 dataset.load_attributes()
@@ -89,14 +91,31 @@ def resize_image(filename):
     image = transform(image, height, width)
     imsave(os.path.join('uploads', filename), image)
 
-@app.route('/editor/<filename>')
+@app.route('/editor/<filename>', methods = ['GET'])
 def editor(filename):
     resize_image(filename)
     image = imread(os.path.join('uploads', filename))
     z = ae.extract_z([image])
     image_z = z[0]
+    new_image = wgan.generate([image_z])
+    imsave(os.path.join('uploads', 'edit-' + str(filename)), new_image[0])
     attributes = vectors.keys()
     return render_template('editor.html', filename = filename, z = str(image_z), attributes = attributes)
+
+@app.route('/editor/<filename>', methods = ['POST'])
+def edit(filename):
+    confdata = request.form
+    conf = {}
+    for key, value in confdata.items():
+        conf[key] = float(value)
+    image = imread(os.path.join('uploads', filename))
+    z = ae.extract_z([image])
+    image_z = z[0]
+    for key, vector in vectors.items():
+        image_z += np.multiply(vector, conf[key])
+    new_image = wgan.generate([image_z])
+    imsave(os.path.join('uploads', 'edit-' + str(filename)), new_image[0])
+    return str(image_z)
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
