@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Photo Editing with GANs</title>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+
+    <!-- jQuery library -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
+    <!-- Latest compiled JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</head>
+<body>
+    <h1>Photo Editing with GANs <small>Nikola Nedeljkovic, Marko Bakovic</small></h1>
+    <hr>
+    <div class="col-md-6">
+        <button class="btn btn-primary" id="random-button">Next random</button>
+        <br><br>
+        <img id="random-image" src="/uploads/random.png" width="300px" height="300px">
+        <br>
+        Z = <span id="random-z"></span>
+    </div>
+    <div class="col-md-6">
+        <form action="/upload" method="post" enctype="multipart/form-data">
+          <div class="form-check">
+            <label class="form-check-label">
+                <input type="file" name="file">
+                Select image to upload
+            </label>
+          </div>
+          <button type="submit" class="btn btn-primary">Upload</button>
+        </form>
+    </div>
+    <script>
+        $("#random-button").on('click', function() {
+           $.get("/random", function(data) {
+               console.log('Random image generated');
+               $('#random-image').attr('src', "http://localhost:5000/uploads/random.png?" + new Date().getTime());
+               $('#random-z').html(data)
+           });
+        });
+    </script>
+</body>
+</html>
