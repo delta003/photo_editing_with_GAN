@@ -50,21 +50,21 @@ ae = AutoEncoder(encoder=encoder,
 tf.global_variables_initializer().run(session = sess)
 
 # Do NOT restore Encoder namespace variables
-variables = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES)
-loaded = load_session(sess, log_dir, variables)
-if not loaded:
-    sys.exit(0)
+# variables = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES)
+# loaded = load_session(sess, log_dir, variables)
+# if not loaded:
+#     sys.exit(0)
 
 dataset = CelebAData(img_size = img_size, dataset_size = dataset_size)
 dataset.load_attributes()
-vectors = load_attributes_vectors('vectors_July_27__22_37.npy', dataset)
+vectors = load_attributes_vectors('vectors_July_28__11_40.npy', dataset)
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'uploads'
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return render_template('index.html', vectors = vectors)
 
 @app.route('/uploads/<filename>')
 def serve_upload(filename):

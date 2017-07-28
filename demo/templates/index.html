@@ -35,6 +35,14 @@
           <button type="submit" class="btn btn-primary">Upload</button>
         </form>
     </div>
+    <div class="col-md-12">
+        <hr>
+        <ul>
+            {% for key, vector in vectors.items(): %}
+                <li><b>{{ key }}</b> {{ vector }}</li>
+            {% endfor %}
+        </ul>
+    </div>
     <script>
         $("#random-button").on('click', function() {
            $.get("/random", function(data) {

@@ -171,6 +171,7 @@ class CelebAData(DataSet):
         print('Searching for nearest neighbor...')
         nearest = np.zeros(images.shape)
         nearest_dist = np.zeros(images.shape[0])
+        nearest_idx = np.zeros(images.shape[0])
         nearest_dist.fill(-1)
         for i in range(self.dataset_size):
             sample = get_image(self.data[i],
@@ -185,6 +186,7 @@ class CelebAData(DataSet):
                 if nearest_dist[idx] < 0 or d < nearest_dist[idx]:
                     nearest_dist[idx] = d
                     nearest[idx] = sample
+                    nearest_idx[idx] = i
             print('{} / {}'.format(i, self.dataset_size))
-        return np.array(nearest)
+        return nearest, nearest_idx
 
