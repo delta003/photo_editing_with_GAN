@@ -33,8 +33,8 @@ class ConvGenerator:
         self.img_size = img_size
         self.channels = channels
 
-    def __call__(self, z):
-        with tf.variable_scope("Generator"):
+    def __call__(self, z, reuse = None):
+        with tf.variable_scope("Generator", reuse = reuse):
             act = tf.nn.relu
             res_met = tf.image.ResizeMethod.NEAREST_NEIGHBOR
             pad2 = [[0, 0], [2, 2], [2, 2], [0, 0]]
