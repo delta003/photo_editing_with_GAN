@@ -18,7 +18,15 @@
     <h1>Photo Editing with GANs <small>Nikola Nedeljkovic, Marko Bakovic</small></h1>
     <hr>
     <div class="col-md-6">
-        <img id="edit-image" src="/uploads/{{ filename }}" width="300px" height="300px">
+        <div class="col-md-12">
+            <div class="col-md-6">
+                <img id="real-image" src="/uploads/{{ filename }}" width="256px" height="256px">
+            </div>
+            <div class="col-md-6">
+                <img id="edit-image" src="/uploads/edit-{{ filename }}" width="256px" height="256px">
+            </div>
+        </div>
+
         <br>
         Z = <span id="image-z">{{ z }}</span>
     </div>
@@ -44,8 +52,11 @@
 
         $(".attribute").change(function() {
             var conf = getValues('.attribute');
-            console.log(conf);
-            // #TODO translate vector, compute new image, update image
+            $.post("/editor/{{ filename }}", conf, function(data) {
+               console.log('Random image generated');
+               $('#edit-image').attr('src', "http://localhost:5000/uploads/edit-{{ filename }}?" + new Date().getTime());
+               $('#image-z').html(data)
+           });
         });
     </script>
 </body>
