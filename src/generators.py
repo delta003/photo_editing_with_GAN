@@ -57,7 +57,7 @@ class ConvGenerator:
             z = tf.image.resize_images(z, (self.img_size, self.img_size), method=res_met)
 
             z = tf.pad(z, pad2, mode="SYMMETRIC")
-            z = tf.layers.conv2d(z, filters=3, activation=tf.nn.sigmoid, kernel_size=(5, 5), **kwargs)
+            z = tf.layers.conv2d(z, filters=43, activation=tf.nn.sigmoid, kernel_size=(5, 5), **kwargs)
             return z
 
 

@@ -132,13 +132,24 @@ class CelebAData(DataSet):
     def next_batch_real(self, batch_size):
         ret = []
         for _ in range(0, batch_size):
-            ret.append(get_image(self.data[self.idx],
-                                 input_height = self.input_height,
-                                 input_width = self.input_width,
-                                 resize_height = self.img_size,
-                                 resize_width = self.img_size,
-                                 crop = True,
-                                 grayscale = False))
+            image = get_image(self.data[self.idx],
+                             input_height = self.input_height,
+                             input_width = self.input_width,
+                             resize_height = self.img_size,
+                             resize_width = self.img_size,
+                             crop = True,
+                             grayscale = False)
+            attrs = self.img_attributes[self.idx]
+            height, width = image.shape[0], image.shape[1]
+            image = image.reshape((image.shape[2], image.shape[0], image.shape[1]))
+            new_image = np.zeros((image.shape[0] + len(self.attributes), height, width))
+            for i in range(image.shape[0]):
+                new_image[i] = image[i]
+            for i in range(len(self.attributes)):
+                if attrs[i] > 0:
+                    new_image[i] = np.ones((height, width))
+            new_image = new_image.reshape((new_image.shape[1], new_image.shape[2], new_image.shape[0]))
+            ret.append(new_image)
             self.idx += 1
             if self.idx == self.dataset_size:
                 self.idx = 0

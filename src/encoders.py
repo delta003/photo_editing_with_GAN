@@ -85,5 +85,7 @@ class ConvAutoEncoder:
 
         # Last layer isn't reused from critic, it's encoder specific
         with tf.variable_scope("Encoder", reuse = None):
-            image = tf.layers.dense(image, output_size)
+            image = tf.layers.dense(image, 1024, activation = tf.nn.relu)
+            image = tf.layers.dense(image, 512, activation = tf.nn.relu)
+            image = tf.layers.dense(image, output_size, activation = tf.nn.sigmoid)
             return image
