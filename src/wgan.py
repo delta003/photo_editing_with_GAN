@@ -243,7 +243,7 @@ class WGAN:
     def generate_random(self, batch_size = 16):
         z_batch = np.random.rand(batch_size, self.z_size)
         f_image = self.session.run(self.fake_image, feed_dict={self.z: z_batch})
-        plt.imshow(visualize_grid(np.array(f_image).astype(np.float32)))
+        plt.imshow(visualize_grid_binary(np.array(f_image).astype(np.float32)))
         plt.axis("off")
         plt.show()
 

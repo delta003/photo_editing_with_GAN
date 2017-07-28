@@ -1,3 +1,5 @@
+import random
+
 from autoencoder import AutoEncoder
 from dataset import *
 from encoders import DCGANAutoEncoder
@@ -63,7 +65,20 @@ loaded = load_session(wgan.session, log_dir, variables)
 if not loaded:
     sys.exit(0)
 
-dataset = CelebAData(img_size = img_size, dataset_size = args.dataset_size)
+dataset = CelebAData(img_size = img_size, dataset_size = -1)
+
+# images = []
+# for _ in range(32):
+#     id = random.randint(0, dataset.dataset_size)
+#     images.append(dataset.get_img_by_idx(id))
+# plt.imshow(visualize_grid_binary(np.array(images[:16]).astype(np.float32)))
+# plt.axis("off")
+# plt.show()
+# plt.imshow(visualize_grid_binary(np.array(images[16:]).astype(np.float32)))
+# plt.axis("off")
+# plt.show()
+wgan.generate_random(16)
+
 
 
 
