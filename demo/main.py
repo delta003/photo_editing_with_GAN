@@ -1,5 +1,6 @@
 """
     Demo app.
+    Run it from PyCharm to add content and source roots to PYTHONPATH.
 """
 import json
 
@@ -19,7 +20,7 @@ dataset_size = -1
 img_size = 64
 channels = 3
 z_size = 100
-log_dir = 'log_transfer_28_02_33'
+log_dir = 'log_transfer_28_02_37'
 
 generator = DCGANGenerator(img_size=img_size, channels=channels)
 critic = DCGANCritic(img_size=img_size, channels=channels)
@@ -95,6 +96,9 @@ def resize_image(filename):
 def editor(filename):
     resize_image(filename)
     image = imread(os.path.join('uploads', filename))
+    height = image.shape[0]
+    width = image.shape[1]
+    image = transform(image, height, width)
     z = ae.extract_z([image])
     image_z = z[0]
     new_image = wgan.generate([image_z])
@@ -109,6 +113,9 @@ def edit(filename):
     for key, value in confdata.items():
         conf[key] = float(value)
     image = imread(os.path.join('uploads', filename))
+    height = image.shape[0]
+    width = image.shape[1]
+    image = transform(image, height, width)
     z = ae.extract_z([image])
     image_z = z[0]
     for key, vector in vectors.items():
