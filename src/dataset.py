@@ -186,7 +186,6 @@ class CelebAData(DataSet):
                 if nearest_dist[idx] < 0 or d < nearest_dist[idx]:
                     nearest_dist[idx] = d
                     nearest[idx] = sample
-                    nearest_idx[idx] = i
             print('{} / {}'.format(i, self.dataset_size))
-        return nearest, nearest_idx
+        return nearest
 

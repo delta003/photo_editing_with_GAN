@@ -1,6 +1,68 @@
-# TODO:
-# Read cherry_pick.txt fajl for z-vectors, each line is one vector (see file for format)
-# For each vector, generate image using wgan.generate
-# Make version of dataset.get_nearest_neighbour that returns list of file names
-# Find neighbours
-# Save list of found names in cherry_pick_neighbour.txt
+from autoencoder import AutoEncoder
+from dataset import *
+from encoders import DCGANAutoEncoder
+from wgan import *
+from generators import *
+from critics import *
+import argparse
+import tensorflow as tf
+from loaders import load_session
+import numpy as np
+
+if __name__ == '__main__':
+
+    img_size = 64
+    channels = 3
+    z_size = 100
+    log_dir = 'log_transfer_27_21_24'
+
+    generator = DCGANGenerator(img_size=img_size, channels=channels)
+    critic = DCGANCritic(img_size=img_size, channels=channels)
+
+    sess = tf.Session()
+
+    optimizer = tf.train.AdamOptimizer(learning_rate=0.0001, beta1=0.5, beta2=0.9)
+
+    wgan = WGAN(generator=generator,
+                critic=critic,
+                z_size=z_size,
+                session=sess,
+                model_path=project_path.model_path,
+                img_size=64,
+                channels=3,
+                optimizer=optimizer)
+
+    encoder = DCGANAutoEncoder(img_size=img_size, channels=channels)
+    ae = AutoEncoder(encoder=encoder,
+                     generator=generator,
+                     z_size=z_size,
+                     session=sess,
+                     model_path=project_path.model_path,
+                     img_size=64,
+                     channels=3,
+                     optimizer=optimizer)
+
+    # Initialize variables
+    tf.global_variables_initializer().run(session=sess)
+
+    # Do NOT restore Encoder namespace variables
+    variables = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope="Critic") \
+                + tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope="Generator")
+    loaded = load_session(wgan.session, log_dir, variables)
+    if not loaded:
+        sys.exit(0)
+
+    dataset = CelebAData(img_size=img_size, dataset_size=-1)
+
+
+    cherry_pick_file = 'cherry_pick.txt'
+    with open(cherry_pick_file) as f:
+        lines = f.readlines()
+        z_cherry = np.array(len(lines), z_size)
+        for idx, vector in enumerate(lines):
+            z_cherry[idx] = vector.split()
+    neighbor_imgs = dataset.get_nearest_neighbor(wgan.generate(z_cherry))
+    np.save('cherry_neighbours', neighbor_imgs)
+
+
+
