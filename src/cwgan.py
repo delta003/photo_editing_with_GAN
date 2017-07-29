@@ -262,15 +262,19 @@ class CWGAN:
         :param timer:
         :return:
         """
-        data_batch = self.dataset.next_batch_real(CWGAN.max_summary_images)
-        z = self.dataset.next_batch_fake(CWGAN.max_summary_images, self.z_size, self.conditions_size)
+        data_batch, data_conditions = self.dataset.next_batch_real(CWGAN.max_summary_images)
+        z, z_conditions = self.dataset.next_batch_fake(CWGAN.max_summary_images, self.z_size, self.conditions_size)
         eta = np.random.rand(CWGAN.max_summary_images, 1, 1, 1)
         eta_z = np.random.rand(CWGAN.max_summary_images, 1)
 
-        summary = sess.run(self.merged,
-                           feed_dict = {self.real_image : data_batch,
-                                        self.z : z, self.eta : eta,
-                                        self.eta_z : eta_z})
+        summary = sess.run(self.merged, feed_dict = {
+                    self.real_image : data_batch,
+                    self.condition : data_conditions,
+                    self.z : z,
+                    self.z_condition : z_conditions,
+                    self.eta : eta,
+                    self.eta_z : eta_z
+                })
         writer.add_summary(summary, step)
         print("\rSummary generated. Step", step,
               " Time == %.2fs" % timer.time())
