@@ -124,6 +124,14 @@ def edit(filename):
     imsave(os.path.join('uploads', 'edit-' + str(filename)), new_image[0])
     return str(image_z)
 
+@app.route('/vectors', methods = ['GET'])
+def show_vectors():
+    for key, value in vectors.items():
+        z = np.array(value).reshape((1, value.shape[0]))
+        image = wgan.generate(z)
+        imsave('uploads/vector-{}.png'.format(key), image[0])
+    return render_template('vectors.html', vectors = vectors)
+
 @app.route('/upload', methods=['POST'])
 def upload_file():
     # check if the post request has the file part
