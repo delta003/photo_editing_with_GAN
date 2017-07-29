@@ -26,7 +26,7 @@ steps = args.steps
 img_size = 64
 channels = 3
 z_size = 100
-log_dir = 'log_transfer_27_21_24'
+log_dir = 'log_transfer_28_02_37'
 
 generator = DCGANGenerator(img_size=img_size, channels=channels)
 critic = DCGANCritic(img_size=img_size, channels=channels)
@@ -59,25 +59,27 @@ ae = AutoEncoder(encoder=encoder,
 tf.global_variables_initializer().run(session = sess)
 
 # Do NOT restore Encoder namespace variables
-variables = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope = "Critic") \
-            + tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope = "Generator")
+variables = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES)
 loaded = load_session(wgan.session, log_dir, variables)
 if not loaded:
     sys.exit(0)
 
 dataset = CelebAData(img_size = img_size, dataset_size = -1)
 
-# images = []
-# for _ in range(32):
-#     id = random.randint(0, dataset.dataset_size)
-#     images.append(dataset.get_img_by_idx(id))
-# plt.imshow(visualize_grid_binary(np.array(images[:16]).astype(np.float32)))
-# plt.axis("off")
-# plt.show()
-# plt.imshow(visualize_grid_binary(np.array(images[16:]).astype(np.float32)))
-# plt.axis("off")
-# plt.show()
-wgan.generate_random(16)
+images = []
+for _ in range(10):
+    id = random.randint(0, dataset.dataset_size)
+    images.append(dataset.get_img_by_idx(id))
+images = np.array(images)
+z = ae.extract_z(images)
+fake_imgs = wgan.generate(z)
+print(images.shape)
+print(fake_imgs.shape)
+
+arr = np.concatenate((images, fake_imgs), axis = 0)
+plt.imshow(visualize_grid_binary(np.array(arr).astype(np.float32)))
+plt.axis("off")
+plt.show()
 
 
 
