@@ -263,7 +263,7 @@ class CWGAN:
         :return:
         """
         data_batch = self.dataset.next_batch_real(CWGAN.max_summary_images)
-        z = self.dataset.next_batch_fake(CWGAN.max_summary_images, self.z_size)
+        z = self.dataset.next_batch_fake(CWGAN.max_summary_images, self.z_size, self.conditions_size)
         eta = np.random.rand(CWGAN.max_summary_images, 1, 1, 1)
         eta_z = np.random.rand(CWGAN.max_summary_images, 1)
 
