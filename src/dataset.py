@@ -95,7 +95,7 @@ class FacesData(DataSet):
         return x[j:j + crop_h, i:i + crop_w]
 
 
-class CelebAData(DataSet):
+class CelebAData:
     def __init__(self, img_size, dataset_size, input_height = 108, input_width = 108):
         self.attributes = []
         self.img_attributes = []
@@ -125,35 +125,29 @@ class CelebAData(DataSet):
             self.attributes = f.readline().split()
             for _ in range(0, n):
                 parts = f.readline().split()
-                attrs = [int(x) for x in parts[1:]]
+                attrs = [max(float(x), 0.0) for x in parts[1:]]
                 self.img_attributes.append(attrs)
         print('Loading attributes completed.')
 
     def next_batch_real(self, batch_size):
         ret = []
+        labels = []
         for _ in range(0, batch_size):
-            image = get_image(self.data[self.idx],
+            ret.append(get_image(self.data[self.idx],
                              input_height = self.input_height,
                              input_width = self.input_width,
                              resize_height = self.img_size,
                              resize_width = self.img_size,
                              crop = True,
-                             grayscale = False)
-            attrs = self.img_attributes[self.idx]
-            height, width = image.shape[0], image.shape[1]
-            image = image.reshape((image.shape[2], image.shape[0], image.shape[1]))
-            new_image = np.zeros((image.shape[0] + len(self.attributes), height, width))
-            for i in range(image.shape[0]):
-                new_image[i] = image[i]
-            for i in range(len(self.attributes)):
-                if attrs[i] > 0:
-                    new_image[i] = np.ones((height, width))
-            new_image = new_image.reshape((new_image.shape[1], new_image.shape[2], new_image.shape[0]))
-            ret.append(new_image)
+                             grayscale = False))
+            labels.append(self.img_attributes[self.idx])
             self.idx += 1
             if self.idx == self.dataset_size:
                 self.idx = 0
-        return ret
+        return ret, labels
+
+    def next_batch_fake(self, batch_size, z_size, c_size):
+        return np.random.rand(batch_size, z_size), np.random.rand(batch_size, c_size)
 
     def get_img_by_idx(self, idx):
         return get_image(self.data[idx],

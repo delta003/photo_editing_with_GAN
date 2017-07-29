@@ -33,14 +33,14 @@ class DCGANAutoEncoder:
             return image
 
 
-class ConvAutoEncoder:
+class ConditionalAutoEncoder:
     def __init__(self, img_size, channels):
         """
         Same as ConvCritic except output isn't 1 but configurable.
         """
         pass
 
-    def __call__(self, image, output_size):
+    def __call__(self, image, condition, output_size):
         """
         This reuses critic variables in all except last layer.
 
@@ -82,10 +82,13 @@ class ConvAutoEncoder:
 
             # image is 4x4x1024
             image = tf.reshape(image, [-1, 4 * 4 * 1024])
+            image = tf.layers.dense(image, 256)
+
+            # concatenate with critic
+            image = tf.concat([image, condition], axis = 1)
 
         # Last layer isn't reused from critic, it's encoder specific
         with tf.variable_scope("Encoder", reuse = None):
-            image = tf.layers.dense(image, 1024, activation = tf.nn.relu)
-            image = tf.layers.dense(image, 512, activation = tf.nn.relu)
+            image = tf.layers.dense(image, 200)
             image = tf.layers.dense(image, output_size, activation = tf.nn.sigmoid)
             return image

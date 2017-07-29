@@ -84,3 +84,39 @@ class DCGANGenerator:
             z = tf.layers.conv2d_transpose(z, filters=128, activation=act, **kwargs)
             z = tf.layers.conv2d_transpose(z, filters=self.channels, activation=tf.nn.sigmoid, **kwargs)
             return z
+
+
+class ConditionalGenerator:
+    def __init__(self, img_size, channels):
+        self.img_size = img_size
+        self.channels = channels
+
+    def __call__(self, z, z_c, reuse = None):
+        with tf.variable_scope("Generator", reuse = reuse):
+            act = tf.nn.relu
+            res_met = tf.image.ResizeMethod.NEAREST_NEIGHBOR
+            pad2 = [[0, 0], [2, 2], [2, 2], [0, 0]]
+
+            kwargs = {"strides": (1, 1), "padding": "valid"}
+
+            # Concatenate z and conditions
+            z = tf.concat([z, z_c], axis = 1)
+
+            z = tf.layers.dense(z, 32768, activation=act)
+            z = tf.reshape(z, [-1, 4, 4, 2048])
+
+            z = tf.pad(z, pad2, mode="SYMMETRIC")
+            z = tf.layers.conv2d(z, filters=1024, kernel_size=(5, 5), **kwargs, activation=act)
+            z = tf.image.resize_images(z, (16, 16), method=res_met)
+            #
+            z = tf.pad(z, pad2, mode="SYMMETRIC")
+            z = tf.layers.conv2d(z, filters=512, kernel_size=(5, 5), **kwargs, activation=act)
+            z = tf.image.resize_images(z, (32, 32), method=res_met)
+
+            z = tf.pad(z, pad2, mode="SYMMETRIC")
+            z = tf.layers.conv2d(z, filters=256, kernel_size=(5, 5), **kwargs, activation=act)
+            z = tf.image.resize_images(z, (self.img_size, self.img_size), method=res_met)
+
+            z = tf.pad(z, pad2, mode="SYMMETRIC")
+            z = tf.layers.conv2d(z, filters=3, activation=tf.nn.sigmoid, kernel_size=(5, 5), **kwargs)
+            return z

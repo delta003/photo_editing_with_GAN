@@ -2,23 +2,24 @@ import sys
 import tensorflow as tf
 import numpy as np
 from utils import Timer
+from utils_vis import visualize_grid, visualize_grid_binary
+import matplotlib.pyplot as plt
 
 
-class CWEGAN:
+class CWGAN:
     max_summary_images = 4
 
     def __init__(self,
                  generator,
                  critic,
-                 encoder,
                  z_size,
                  session,
                  model_path,
                  img_size,
                  channels,
-                 attrs,
+                 conditions_size,
                  optimizer = tf.train.AdamOptimizer(learning_rate = 0.0001,
-                                                    beta1 = 0.5, beta2 = 0.9)):
+                                                    beta1 = 0.5, beta2 = 0.9)) :
         """
         Definition of the Wasserstein GAN with Gradient Penalty (WGAN-GP)
 
@@ -38,22 +39,27 @@ class CWEGAN:
         self.dataset = None
         self.img_size = img_size
         self.channels = channels
-        self.attrs = attrs
+        self.conditions_size = conditions_size
 
         self.generator = generator
         self.critic = critic
-        self.encoder = encoder
 
         self.optimizer = optimizer
         self.z_size = z_size
 
         # z shape is [batch_size, z_size]
         self.z = tf.placeholder(tf.float32, [None, self.z_size], name = "Z")
+        self.z_condition = tf.placeholder(tf.float32,
+                                        [None, self.conditions_size],
+                                        name = "Z_Conditions")
         # image shape is [batch_size, height, width, channels]
         self.real_image = tf.placeholder(tf.float32,
                                          [None, self.img_size, self.img_size,
-                                          self.channels + self.attrs],
+                                          self.channels],
                                          name = "Real_image")
+        self.condition = tf.placeholder(tf.float32,
+                                        [None, self.conditions_size],
+                                        name = "Conditions")
         """
         ##################################################################
 
@@ -67,17 +73,13 @@ class CWEGAN:
         ##################################################################
         """
 
-        self.fake_image = self.generator(self.z)
+        self.fake_image = self.generator(self.z, self.z_condition)
 
-        self.c_real = self.critic(self.real_image)
-        self.c_fake = self.critic(self.fake_image, reuse = True)
-
-        self.z_encoder = self.encoder(self.real_image, self.z_size)
-        self.fake_image_encoder = self.generator(self.z_encoder, reuse = True)
+        self.c_real = self.critic(self.real_image, self.condition)
+        self.c_fake = self.critic(self.fake_image, self.z_condition, reuse = True)
 
         self.c_cost = tf.reduce_mean(self.c_real - self.c_fake)
         self.g_cost = tf.reduce_mean(self.c_fake)
-        self.e_cost = tf.reduce_mean(tf.square(self.fake_image_encoder - self.real_image))
 
         """
         ##################################################################
@@ -89,13 +91,13 @@ class CWEGAN:
 
         # Critic regularization, satisfying the Lipschitz constraint with
         # gradient penalty
-        with tf.name_scope("Gradient_penalty") :
+        with tf.name_scope("Gradient_penalty"):
             self.eta = tf.placeholder(tf.float32, shape = [None, 1, 1, 1],
                                       name = "Eta")
-            interp = self.eta * self.real_image + (
-                                                  1 - self.eta) * \
-                                                  self.fake_image
-            c_interp = self.critic(interp, reuse = True)
+            self.eta_z = tf.placeholder(tf.float32, shape = [None, 1], name = "Eta_z")
+            interp = self.eta * self.real_image + (1 - self.eta) * self.fake_image
+            interp_con = self.eta_z * self.condition + (1 - self.eta_z) * self.z_condition
+            c_interp = self.critic(interp, interp_con, reuse = True)
 
             # taking the zeroth and only element because tf.gradients returns
             #  a list
@@ -133,12 +135,6 @@ class CWEGAN:
                                                    var_list = g_var_list,
                                                    name = "Generator_optimizer")
 
-        e_var_list = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES,
-                                         scope = "Encoder")
-        self.e_optimizer = self.optimizer.minimize(self.e_cost,
-                                               var_list = e_var_list,
-                                               name = "Encoder_optimizer")
-
         """
         ##################################################################
 
@@ -149,25 +145,25 @@ class CWEGAN:
 
         # Defining summaries for tensorflow until the end of the method
         summaries = [
-            tf.summary.image("Generated image", self.fake_image[:][:][:3], max_outputs = CWEGAN.max_summary_images),
-            tf.summary.image("Real image", self.real_image[:][:][:3], max_outputs = CWEGAN.max_summary_images),
-            tf.summary.image("Recovered image", self.fake_image_encoder[:][:][:3], max_outputs = CWEGAN.max_summary_images),
+            tf.summary.image("Generated image", self.fake_image,
+                             max_outputs = CWGAN.max_summary_images),
+            tf.summary.image("Real image", self.real_image,
+                             max_outputs = CWGAN.max_summary_images),
             tf.summary.scalar("Critic cost", self.c_cost),
-            tf.summary.scalar("Generator cost", self.g_cost),
-            tf.summary.scalar("Encoder cost", self.e_cost)
+            tf.summary.scalar("Generator cost", self.g_cost)
         ]
 
         # Distributions of weights and their gradients
-        # from tensorflow.python.framework import ops
-        # for gradient, variable in self.optimizer.compute_gradients(
-        #         self.c_cost):
-        #     if isinstance(gradient, ops.IndexedSlices) :
-        #         grad_values = gradient.values
-        #     else :
-        #         grad_values = gradient
-        #     summaries.append(tf.summary.histogram(variable.name, variable))
-        #     summaries.append(
-        #         tf.summary.histogram(variable.name + "/gradients", grad_values))
+        from tensorflow.python.framework import ops
+        for gradient, variable in self.optimizer.compute_gradients(
+                self.c_cost) :
+            if isinstance(gradient, ops.IndexedSlices) :
+                grad_values = gradient.values
+            else :
+                grad_values = gradient
+            summaries.append(tf.summary.histogram(variable.name, variable))
+            summaries.append(
+                tf.summary.histogram(variable.name + "/gradients", grad_values))
 
         self.merged = tf.summary.merge(summaries)
 
@@ -187,7 +183,7 @@ class CWEGAN:
         saver = tf.train.Saver()
 
         timer = Timer()
-        for step in range(steps):
+        for step in range(steps) :
             print(step, end = " ")
             sys.stdout.flush()
 
@@ -223,31 +219,30 @@ class CWEGAN:
         """
 
         if step < 25:
-            n_critic = 25
-        else:
-            n_critic = 5
+            n_critic = 100
+        else :
+            n_critic = 10
 
         # Train Critic
-        for _ in range(n_critic) :
-            real_image_batch = self.dataset.next_batch_real(batch_size)
-            z_batch = self.dataset.next_batch_fake(batch_size, self.z_size)
+        for _ in range(n_critic):
+            real_image_batch, real_conditions = self.dataset.next_batch_real(batch_size)
+            z_batch, z_conditions = self.dataset.next_batch_fake(batch_size, self.z_size, self.conditions_size)
             eta = np.random.rand(batch_size, 1, 1, 1)
+            eta_z = np.random.rand(batch_size, 1)
             sess.run(self.c_optimizer, feed_dict = {
                 self.real_image : real_image_batch,
+                self.condition : real_conditions,
                 self.z : z_batch,
-                self.eta : eta
+                self.z_condition : z_conditions,
+                self.eta : eta,
+                self.eta_z : eta_z
             })
 
         # Train Generator
-        z_batch = self.dataset.next_batch_fake(batch_size, self.z_size)
+        z_batch, z_conditions = self.dataset.next_batch_fake(batch_size, self.z_size, self.conditions_size)
         sess.run(self.g_optimizer, feed_dict = {
-            self.z: z_batch
-        })
-
-        # Train Encoder
-        real_image_batch = self.dataset.next_batch_real(batch_size)
-        self.session.run(self.e_optimizer, feed_dict = {
-            self.real_image : real_image_batch
+            self.z: z_batch,
+            self.z_condition: z_conditions
         })
 
         """
@@ -267,13 +262,15 @@ class CWEGAN:
         :param timer:
         :return:
         """
-        data_batch = self.dataset.next_batch_real(CWEGAN.max_summary_images)
-        z = self.dataset.next_batch_fake(CWEGAN.max_summary_images, self.z_size)
-        eta = np.random.rand(CWEGAN.max_summary_images, 1, 1, 1)
+        data_batch = self.dataset.next_batch_real(CWGAN.max_summary_images)
+        z = self.dataset.next_batch_fake(CWGAN.max_summary_images, self.z_size)
+        eta = np.random.rand(CWGAN.max_summary_images, 1, 1, 1)
+        eta_z = np.random.rand(CWGAN.max_summary_images, 1)
 
         summary = sess.run(self.merged,
-                           feed_dict = {self.real_image: data_batch,
-                                        self.z: z, self.eta: eta})
+                           feed_dict = {self.real_image : data_batch,
+                                        self.z : z, self.eta : eta,
+                                        self.eta_z : eta_z})
         writer.add_summary(summary, step)
         print("\rSummary generated. Step", step,
               " Time == %.2fs" % timer.time())
@@ -282,6 +279,20 @@ class CWEGAN:
         f_image = self.session.run(self.fake_image, feed_dict = {self.z : z})
         return f_image
 
-    def extract_z(self, image):
-        z = self.session.run(self.z, feed_dict = {self.real_image : image})
-        return z
+    def generate_random(self, batch_size = 16) :
+        z_batch = np.random.rand(batch_size, self.z_size)
+        f_image = self.session.run(self.fake_image,
+                                   feed_dict = {self.z : z_batch})
+        plt.imshow(visualize_grid_binary(np.array(f_image).astype(np.float32)))
+        plt.axis("off")
+        plt.show()
+
+    def generate_random_with_neighbor(self, dataset, batch_size = 8) :
+        z_batch = np.random.rand(batch_size, self.z_size)
+        f_image = self.session.run(self.fake_image,
+                                   feed_dict = {self.z : z_batch})
+        neighbor = dataset.get_nearest_neighbor(f_image)
+        images = np.concatenate((f_image, neighbor))
+        plt.imshow(visualize_grid_binary(np.array(images).astype(np.float32)))
+        plt.axis("off")
+        plt.show()

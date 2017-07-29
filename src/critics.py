@@ -105,4 +105,51 @@ class DCGANCritic:
             return image
 
 
+class ConditionalCritic:
+    def __init__(self, img_size, channels):
+        """
+        Takes 64x64 images at this point. Parameters are not to break the interface.
+        :param img_size:
+        :param channels:
+        """
+        pass
 
+    def __call__(self, image, condition, reuse=None):
+        with tf.variable_scope("Critic", reuse=reuse):
+            act = tf.nn.relu
+            pad1 = [[0, 0], [1, 1], [1, 1], [0, 0]]
+
+            kwargs3 = {"kernel_size": (3, 3), "strides": (1, 1), "padding": "valid"}
+            kwargs4 = {"kernel_size": (4, 4), "strides": (4, 4), "padding": "valid"}
+
+            image = tf.pad(image, pad1, mode="SYMMETRIC")
+            image = tf.layers.conv2d(image, filters=64, **kwargs3, activation=act)
+
+            # image is 64x64x1024
+            image = tf.layers.conv2d(image, filters=128, **kwargs4, activation=act)
+
+            # image is 16x16x1024
+            image = tf.pad(image, pad1, mode="SYMMETRIC")
+            image = tf.layers.conv2d(image, filters=256, **kwargs3, activation=act)
+
+            # image is 16x16x1024
+            image = tf.layers.conv2d(image, filters=512, **kwargs4, activation=act)
+
+            # image is 4x4x1024
+            image = tf.pad(image, pad1, mode="SYMMETRIC")
+            image = tf.layers.conv2d(image, filters=1024, **kwargs3, activation=act)
+
+            # image is 4x4x1024
+            image = tf.reshape(image, [-1, 4 * 4 * 1024])
+            image = tf.layers.dense(image, 512)
+
+            # concatenate with critic
+            image = tf.concat([image, condition], axis = 1)
+
+            image = tf.layers.dense(image, 256)
+            image = tf.layers.dense(image, 64)
+
+            image = tf.layers.dense(image, 1)
+
+            assert image.shape[1] == 1
+            return image
